@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <group>
+    <item
+        android:title="Saved News"
+        app:showAsAction="never"
+        android:orderInCategory="100"
+        android:id="@+id/saved_news"/>
+    </group>
+    <group>
+        <item
+            android:title="Settings"
+            android:orderInCategory="100"
+            app:showAsAction="never"
+            android:id="@+id/settings"/>
+    </group>
+</menu>
