@@ -2,11 +2,13 @@ package com.example.offlinenewsreader;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -26,18 +28,13 @@ import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener{
 
     WebView mWebView;
     ProgressBar mProgressBar;
+    SharedPreferences sharedPreferences;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        mProgressBar = (ProgressBar) findViewById(R.id.progress_bar_main);
-        mWebView = (WebView) findViewById(R.id.webView);
+    public void makeWebView() {
         mWebView.getSettings().setJavaScriptEnabled(true);
         mWebView.setWebViewClient(new WebViewClient() {
             @Override
@@ -74,8 +71,31 @@ public class MainActivity extends AppCompatActivity{
         if ( !isNetworkAvailable() ) { // loading offline
             mWebView.getSettings().setCacheMode( WebSettings.LOAD_CACHE_ELSE_NETWORK );
         }
-        mWebView.loadUrl("https://news.ycombinator.com/");
 
+        String url = sharedPreferences.getString("webview_url", "https://news.ycombinator.com/");
+        if (!url.startsWith("https://")) {
+            url = "https://" + url;
+        }
+
+        mWebView.loadUrl(url);
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        mProgressBar = (ProgressBar) findViewById(R.id.progress_bar_main);
+        mWebView = (WebView) findViewById(R.id.webView);
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+        makeWebView();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(this);
     }
 
     private boolean isNetworkAvailable() {
@@ -119,5 +139,12 @@ public class MainActivity extends AppCompatActivity{
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+        if (s.equals("webview_url")) {
+            makeWebView();
+        }
     }
 }
